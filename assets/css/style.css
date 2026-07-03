@@ -1183,6 +1183,21 @@ input:focus-visible {
   opacity: 1;
   transform: translateY(0);
 }
+/* Episode rows in the detail modal. */
+.tv-mode .episode {
+  cursor: none;
+}
+.tv-mode .episode:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  background: rgba(255, 159, 28, 0.14);
+  border-radius: 10px;
+}
+/* The mouse scroll arrows overlay the row edges and would trap D-pad focus —
+   hide them; the remote scrolls rows by moving between posters. */
+.tv-mode .row__arrow {
+  display: none !important;
+}
 /* Nav + header links get a filled pill when focused. */
 .tv-mode .nav a:focus,
 .tv-mode .logo:focus {

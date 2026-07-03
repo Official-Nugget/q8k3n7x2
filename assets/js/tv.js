@@ -40,8 +40,8 @@
     ".logo",
     "#searchInput",
     ".card",
+    ".episode",
     ".btn",
-    ".row__arrow",
     ".row__action",
     "select",
     ".filter__reset",
@@ -180,12 +180,26 @@
     ArrowRight: "right",
     ArrowUp: "up",
     ArrowDown: "down",
+    Left: "left",
+    Right: "right",
+    Up: "up",
+    Down: "down",
   };
+  // Fallback by numeric key code (some TV remotes don't set a proper e.key).
+  const ARROW_CODES = { 37: "left", 38: "up", 39: "right", 40: "down" };
+  const ENTER_CODES = { 13: 1, 23: 1, 66: 1 }; // Enter, DPAD_CENTER, KEYCODE_ENTER
+
+  function directionOf(e) {
+    return ARROWS[e.key] || ARROW_CODES[e.keyCode] || null;
+  }
+  function isEnter(e) {
+    return e.key === "Enter" || e.key === "OK" || ENTER_CODES[e.keyCode];
+  }
 
   document.addEventListener(
     "keydown",
     (e) => {
-      const dir = ARROWS[e.key];
+      const dir = directionOf(e);
       const active = document.activeElement;
       const tag = active ? active.tagName : "";
       const isText =
@@ -214,7 +228,7 @@
         return;
       }
 
-      if (e.key === "Enter" || e.key === "OK") {
+      if (isEnter(e)) {
         if (isText || isSelect) return; // native submit / option handling
         if (active && active !== document.body) {
           e.preventDefault();
