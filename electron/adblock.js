@@ -22,6 +22,8 @@ const ALLOWED_EXTERNAL = [
   "github.com",
   "netlify.app",
   "vercel.app",
+  "youtube.com",
+  "youtu.be",
 ];
 
 // Known ad / popunder / analytics / miner hosts and fragments. Matched as
@@ -85,9 +87,22 @@ const BLOCK_LIST = [
   "cdn-cgi/challenge", // some ad-wall challenges
 ];
 
+// Never block these — trailers (YouTube) and core media infrastructure must
+// always load, even though some share Google domains with ad services.
+const NEVER_BLOCK = [
+  "youtube.com",
+  "youtube-nocookie.com",
+  "ytimg.com",
+  "googlevideo.com",
+  "ggpht.com",
+  "gstatic.com",
+  "youtubei.googleapis.com",
+];
+
 function hostIsBlocked(hostname) {
   if (!hostname) return false;
   const h = hostname.toLowerCase();
+  if (NEVER_BLOCK.some((d) => h === d || h.endsWith("." + d))) return false;
   return BLOCK_LIST.some((frag) => h.includes(frag));
 }
 
@@ -119,9 +134,27 @@ function installNetworkFilter(session) {
   });
 }
 
+// Force a youtube.com Referer/Origin on trailer requests. YouTube throws
+// "Error 153" when it can't verify the embedding origin (which happens in a
+// packaged desktop app); presenting youtube.com as the referrer satisfies it.
+function installYouTubeReferer(session) {
+  const filter = {
+    urls: [
+      "*://*.youtube.com/*",
+      "*://*.youtube-nocookie.com/*",
+    ],
+  };
+  session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+    const headers = details.requestHeaders || {};
+    headers["Referer"] = "https://www.youtube.com/";
+    headers["Origin"] = "https://www.youtube.com";
+    callback({ requestHeaders: headers });
+  });
+}
+
 // Layer 2: guard a webContents (and any <iframe> / webview inside it) against
 // popups and forced top-level navigations.
-function guardContents(contents) {
+function guardContents(contents, appOrigin) {
   // Block ALL new windows/popups. Only genuinely trusted links open externally.
   contents.setWindowOpenHandler(({ url }) => {
     if (isAllowedExternal(url)) {
@@ -133,8 +166,10 @@ function guardContents(contents) {
   // Prevent redirect scripts from navigating the whole app away.
   contents.on("will-navigate", (event, url) => {
     const current = contents.getURL();
-    const isLocal = url.startsWith("file:");
-    // Allow in-app (file://) navigation and hash changes; block the rest.
+    const isLocal =
+      url.startsWith("file:") ||
+      (appOrigin && url.startsWith(appOrigin));
+    // Allow in-app navigation and hash changes; block the rest.
     if (!isLocal && url !== current) {
       event.preventDefault();
     }
@@ -142,13 +177,14 @@ function guardContents(contents) {
 }
 
 // Apply guards to the main window and every child frame/webContents created.
-function install(app, mainWindow) {
+function install(app, mainWindow, appOrigin) {
   const { session } = require("electron");
   installNetworkFilter(session.defaultSession);
-  guardContents(mainWindow.webContents);
+  installYouTubeReferer(session.defaultSession);
+  guardContents(mainWindow.webContents, appOrigin);
 
   app.on("web-contents-created", (_e, contents) => {
-    guardContents(contents);
+    guardContents(contents, appOrigin);
   });
 }
 

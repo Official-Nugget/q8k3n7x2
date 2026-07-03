@@ -4,17 +4,20 @@
  * with a custom, branded title bar (see electron/preload.js + the .titlebar UI).
  */
 
-const { app, BrowserWindow, Menu, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, shell } = require("electron");
 const path = require("path");
 const rpc = require("./rpc");
 const adblock = require("./adblock");
 const updater = require("./updater");
+const server = require("./server");
 
 const APP_TITLE = "Club Sandwich Streaming";
 // Use a packaged asset (build/ is only used at build time, not bundled).
 const ICON = path.join(__dirname, "..", "assets", "icons", "icon-512.png");
+const APP_ROOT = path.join(__dirname, "..");
 
 let mainWindow = null;
+let appOrigin = null; // http://127.0.0.1:<port>
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -31,12 +34,20 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: true,
+      // Let embedded players (trailers, streams) start without a click gesture.
+      autoplayPolicy: "no-user-gesture-required",
     },
   });
 
   Menu.setApplicationMenu(null);
 
-  mainWindow.loadFile(path.join(__dirname, "..", "index.html"));
+  // Served over http://127.0.0.1 (see electron/server.js) so YouTube trailers
+  // embed correctly; falls back to file:// if the server didn't start.
+  if (appOrigin) {
+    mainWindow.loadURL(`${appOrigin}/index.html`);
+  } else {
+    mainWindow.loadFile(path.join(APP_ROOT, "index.html"));
+  }
 
   mainWindow.on("page-title-updated", (e) => {
     e.preventDefault();
@@ -53,7 +64,7 @@ function createWindow() {
   mainWindow.on("unmaximize", sendMaxState);
 
   // Block ad hosts, popups, and redirect hijacks (see electron/adblock.js).
-  adblock.install(app, mainWindow);
+  adblock.install(app, mainWindow, appOrigin);
 
   // Auto-update (dormant unless a GitHub repo is configured).
   updater.init(app, mainWindow);
@@ -73,7 +84,21 @@ ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 ipcMain.on("discord:set", (_e, info) => rpc.setPresence(info));
 ipcMain.on("discord:clear", () => rpc.clearPresence());
 
-app.whenReady().then(() => {
+// ---- Open a URL in the real browser (used for "Cast / open in browser") ----
+ipcMain.on("open-external", (_e, url) => {
+  if (typeof url === "string" && /^https?:\/\//i.test(url)) {
+    shell.openExternal(url);
+  }
+});
+
+app.whenReady().then(async () => {
+  try {
+    const s = await server.start(APP_ROOT);
+    appOrigin = s.origin;
+  } catch (e) {
+    appOrigin = null; // fall back to file://
+  }
+
   createWindow();
 
   app.on("activate", () => {

@@ -169,10 +169,25 @@ const UI = (() => {
   }
 
   // ---------- Trailer overlay ----------
+  let currentTrailerKey = null;
   function openTrailer(youtubeKey) {
+    currentTrailerKey = youtubeKey;
+    // NOTE: intentionally NO `origin`/`enablejsapi` params. When present,
+    // YouTube runs origin verification and throws "Error 153" if it can't
+    // match the embedding origin (common in packaged/desktop contexts). A
+    // plain embed just plays. The desktop app also forces a youtube.com
+    // Referer header (see electron/adblock.js) as a second safeguard.
+    const params = new URLSearchParams({
+      autoplay: "1",
+      rel: "0",
+      modestbranding: "1",
+      playsinline: "1",
+    });
     $(
       "#trailerFrame"
-    ).src = `https://www.youtube.com/embed/${youtubeKey}?autoplay=1&rel=0`;
+    ).src = `https://www.youtube-nocookie.com/embed/${youtubeKey}?${params}`;
+    const yt = $("#trailerYT");
+    if (yt) yt.href = `https://www.youtube.com/watch?v=${youtubeKey}`;
     $("#trailer").hidden = false;
     document.body.style.overflow = "hidden";
   }

@@ -23,4 +23,7 @@ contextBridge.exposeInMainWorld("desktop", {
     ipcRenderer.on("update:available", (_e, info) => cb(info)),
   onUpdateDownloaded: (cb) =>
     ipcRenderer.on("update:downloaded", (_e, info) => cb(info)),
+
+  // Open a link in the real browser (e.g. to cast to a TV via Chrome)
+  openExternal: (url) => ipcRenderer.send("open-external", url),
 });

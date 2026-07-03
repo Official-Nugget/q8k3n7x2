@@ -106,7 +106,10 @@
     reload() {
       if (!this.ctx) return;
       $("#playerTitle").textContent = this.displayTitle();
-      UI.setPlayerFrame(Player.buildUrl(this.ctx));
+      this.currentUrl = Player.buildUrl(this.ctx);
+      UI.setPlayerFrame(this.currentUrl);
+      const castBtn = $("#playerCast");
+      if (castBtn) castBtn.hidden = !window.desktop?.openExternal;
     },
     async ensureSeasons() {
       if (this.seasons.length) return this.updateNav();
@@ -247,10 +250,40 @@
       (Array.isArray(d.episode_run_time) && d.episode_run_time[0]) ||
       null;
     const genres = (d.genres || []).map((g) => g.name).join(", ");
-    const cast = (d.credits?.cast || [])
-      .slice(0, 4)
-      .map((c) => c.name)
-      .join(", ");
+    const castList = (d.credits?.cast || []).slice(0, 12);
+    const castStrip = castList.length
+      ? `<div class="cast">
+           <h3 class="cast__title">Cast</h3>
+           <div class="cast__row">
+             ${castList
+               .map((c) => {
+                 const photo = TMDB.img(c.profile_path, "w185");
+                 const initials = (c.name || "?")
+                   .split(" ")
+                   .map((p) => p[0])
+                   .slice(0, 2)
+                   .join("");
+                 return `
+                   <div class="cast__member">
+                     ${
+                       photo
+                         ? `<img class="cast__photo" loading="lazy" src="${photo}" alt="${UI.escapeHtml(
+                             c.name
+                           )}">`
+                         : `<div class="cast__photo cast__photo--empty">${UI.escapeHtml(
+                             initials
+                           )}</div>`
+                     }
+                     <div class="cast__name">${UI.escapeHtml(c.name || "")}</div>
+                     <div class="cast__char">${UI.escapeHtml(
+                       c.character || ""
+                     )}</div>
+                   </div>`;
+               })
+               .join("")}
+           </div>
+         </div>`
+      : "";
     const backdrop =
       TMDB.img(d.backdrop_path, "w1280") ||
       TMDB.img(d.poster_path, "w780") ||
@@ -324,8 +357,8 @@
         )}</p>
         <div class="modal__facts">
           ${genres ? `<div><b>Genres:</b> ${UI.escapeHtml(genres)}</div>` : ""}
-          ${cast ? `<div><b>Cast:</b> ${UI.escapeHtml(cast)}</div>` : ""}
         </div>
+        ${castStrip}
         ${n.media === "tv" ? `<div class="episodes" id="episodes"></div>` : ""}
       </div>
     `;
@@ -926,6 +959,16 @@
     $("#playerNext").addEventListener("click", () =>
       Playback.go(Playback.nextTarget())
     );
+
+    // Player: open in browser (to cast to a TV via Chrome/Edge)
+    $("#playerCast").addEventListener("click", () => {
+      if (Playback.currentUrl && window.desktop?.openExternal) {
+        window.desktop.openExternal(Playback.currentUrl);
+        UI.notice(
+          "Opened in your browser — use its Cast button to send to a TV."
+        );
+      }
+    });
 
     // Auto-advance to next episode when one ends
     document.addEventListener("player:event", (e) => {

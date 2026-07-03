@@ -38,27 +38,42 @@ async function connect() {
   }
 }
 
+// Discord ActivityType.Watching → the status reads "Watching <app name>".
+const WATCHING = 3;
+
 function apply(info) {
   if (!client || !ready) return;
   try {
+    const isTv = info.media === "tv" && info.season && info.episode;
+    const title = info.title ? String(info.title).slice(0, 128) : "Browsing";
     const activity = {
-      details: info.title ? String(info.title).slice(0, 128) : "Browsing",
-      state:
-        info.media === "tv" && info.season && info.episode
-          ? `Season ${info.season} · Episode ${info.episode}`
-          : info.media === "movie"
-          ? "Watching a movie"
-          : undefined,
-      largeImageKey: info.poster || LARGE_IMAGE_KEY || undefined,
-      largeImageText: info.title || "Club Sandwich Streaming",
-      smallImageKey: info.poster ? LARGE_IMAGE_KEY || undefined : undefined,
-      smallImageText: "Club Sandwich Streaming",
+      type: WATCHING,
+      details: title,
+      state: isTv
+        ? `Season ${info.season} · Episode ${info.episode}`.slice(0, 128)
+        : info.media === "movie"
+        ? "Watching a movie"
+        : undefined,
       startTimestamp: info.startTimestamp || Date.now(),
       instance: false,
     };
-    client.user?.setActivity(activity);
+
+    // IMPORTANT: Discord's `large_image` must be an uploaded Art Asset KEY
+    // (e.g. "logo"), NOT a raw image URL. Passing a URL makes Discord reject
+    // the whole presence, so nothing shows at all. We only attach an image if
+    // a real asset key is configured in discord-config.js.
+    const key = (LARGE_IMAGE_KEY || "").trim();
+    if (key) {
+      activity.largeImageKey = key;
+      activity.largeImageText = info.title || "Club Sandwich Streaming";
+    }
+
+    const p = client.user?.setActivity(activity);
+    if (p && typeof p.catch === "function") {
+      p.catch((e) => console.warn("[discord] setActivity failed:", e?.message || e));
+    }
   } catch (e) {
-    /* ignore transient errors */
+    console.warn("[discord] presence error:", e?.message || e);
   }
 }
 

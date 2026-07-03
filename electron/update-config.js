@@ -18,6 +18,6 @@
  */
 
 module.exports = {
-  OWNER: "ChickenNugget1153",
-  REPO: "CS-Video-Player",
+  OWNER: "Official-Nugget",
+  REPO: "VideoPlayer",
 };
