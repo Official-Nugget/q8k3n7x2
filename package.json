@@ -38,6 +38,28 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true
     },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.entertainment",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "Club Sandwich Streaming"
+    },
     "publish": [
       {
         "provider": "github",

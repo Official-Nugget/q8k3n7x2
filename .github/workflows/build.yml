@@ -1,0 +1,45 @@
+name: Build & Release
+
+# Runs when you push a version tag (e.g. v1.0.1) or trigger it manually.
+# Builds the Windows installer on a Windows runner and the macOS .dmg on a
+# real macOS runner (GitHub provides these free for public repos), then
+# publishes both to a GitHub Release matching the version in package.json.
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: macOS
+          - os: windows-latest
+            name: Windows
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.name }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build & publish
+        run: npm run release
+        env:
+          # electron-builder reads GH_TOKEN to upload release assets.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
