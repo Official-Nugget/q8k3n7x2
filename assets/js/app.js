@@ -886,9 +886,13 @@
 
     if (!items.length) {
       const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent =
-        "Your list is empty. Tap “+ My List” on any title to save it here.";
+      empty.className = "empty-state";
+      empty.innerHTML =
+        '<div class="empty-state__icon" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>' +
+        '<div class="empty-state__title">Your list is empty</div>' +
+        '<div class="empty-state__hint">Hit <b>+ My List</b> on any movie or show and it\u2019ll show up here \u2014 ready to watch whenever you are.</div>';
       grid.appendChild(empty);
       return;
     }
