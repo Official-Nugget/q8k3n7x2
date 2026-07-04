@@ -17,11 +17,30 @@ const ROOT = path.join(__dirname, "..");
 const SRC = path.join(ROOT, "build", "source-icon.png");
 const OUT_ICONS = path.join(ROOT, "assets", "icons");
 const ANDROID_RES = path.join(ROOT, "android", "app", "src", "main", "res");
-const BG = 0x000000ff; // match the icon's black background seamlessly
+const BG = 0x000000ff; // black fill (used where a background is required)
+const TRANSPARENT = 0x00000000;
 
-async function squareCanvas(img) {
+// The source art is drawn on a solid black rectangle. For desktop/web icons we
+// want the artwork to float on a transparent background, so we turn near-black
+// pixels transparent (keeping the brown film strip + orange play button). The
+// black sprocket holes become see-through too, which is the desired look.
+function keyOutBlack(img) {
+  const out = img.clone();
+  const d = out.bitmap.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const max = Math.max(d[i], d[i + 1], d[i + 2]);
+    // Ramp: <=6 fully transparent, >=27 fully opaque, smooth in between.
+    let a = (max - 6) * 12;
+    if (a < 0) a = 0;
+    if (a > 255) a = 255;
+    d[i + 3] = Math.min(d[i + 3], a);
+  }
+  return out;
+}
+
+async function squareCanvas(img, color = BG) {
   const size = Math.max(img.bitmap.width, img.bitmap.height);
-  const canvas = new Jimp({ width: size, height: size, color: BG });
+  const canvas = new Jimp({ width: size, height: size, color });
   const x = Math.round((size - img.bitmap.width) / 2);
   const y = Math.round((size - img.bitmap.height) / 2);
   canvas.composite(img, x, y);
@@ -83,27 +102,33 @@ async function writeAndroidAssets(square) {
 
   const img = await Jimp.read(SRC);
   console.log(`source: ${img.bitmap.width} x ${img.bitmap.height}`);
-  const square = await squareCanvas(img);
 
-  // Electron / builder base icon
-  fs.writeFileSync(path.join(ROOT, "build", "icon.png"), await resizedPng(square, 1024));
+  // Black-filled square (for places that require a background) and a
+  // transparent square (black keyed out) for desktop/web icons.
+  const square = await squareCanvas(img, BG);
+  const transSquare = await squareCanvas(keyOutBlack(img), TRANSPARENT);
 
-  // PWA icons
-  fs.writeFileSync(path.join(OUT_ICONS, "icon-192.png"), await resizedPng(square, 192));
-  fs.writeFileSync(path.join(OUT_ICONS, "icon-512.png"), await resizedPng(square, 512));
+  // Electron / builder base icon (mac .icns supports transparency)
+  fs.writeFileSync(path.join(ROOT, "build", "icon.png"), await resizedPng(transSquare, 1024));
+
+  // PWA "any" icons + favicon: transparent
+  fs.writeFileSync(path.join(OUT_ICONS, "icon-192.png"), await resizedPng(transSquare, 192));
+  fs.writeFileSync(path.join(OUT_ICONS, "icon-512.png"), await resizedPng(transSquare, 512));
+  fs.writeFileSync(path.join(OUT_ICONS, "apple-touch-icon.png"), await resizedPng(transSquare, 180));
+  // Maskable icon MUST be full-bleed (the launcher crops it), so keep it filled.
   fs.writeFileSync(path.join(OUT_ICONS, "maskable-512.png"), await resizedPng(square, 512));
-  fs.writeFileSync(path.join(OUT_ICONS, "apple-touch-icon.png"), await resizedPng(square, 180));
 
-  // Windows .ico (bundle a few sizes)
+  // Windows .ico (bundle a few sizes) — transparent
   const icoSizes = [16, 24, 32, 48, 64, 128, 256];
-  const icoBuffers = await Promise.all(icoSizes.map((s) => resizedPng(square, s)));
+  const icoBuffers = await Promise.all(icoSizes.map((s) => resizedPng(transSquare, s)));
   const ico = await pngToIco(icoBuffers);
   fs.writeFileSync(path.join(ROOT, "build", "icon.ico"), ico);
 
-  // Android (Fire TV) launcher icons + banner
+  // Android (Fire TV) launcher icons + banner — keep the filled background
+  // (adaptive icons require a background layer; can't be transparent).
   await writeAndroidAssets(square);
 
-  console.log("Icons generated: build/icon.png, build/icon.ico, assets/icons/*");
+  console.log("Icons generated (transparent desktop/web, filled Android): build/*, assets/icons/*");
 })().catch((err) => {
   console.error(err);
   process.exit(1);
