@@ -815,12 +815,34 @@ button {
   flex-direction: column;
 }
 .player__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
   height: 56px;
   display: flex;
   align-items: center;
   gap: 18px;
   padding: 0 20px;
-  background: #0a0a0a;
+  /* Floats over the video like a real player's control bar. */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.92),
+    rgba(0, 0, 0, 0.55) 60%,
+    rgba(0, 0, 0, 0)
+  );
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+/* Auto-hidden state (toggled by JS after mouse inactivity, or by the remote
+   on Fire TV). Slides up out of view for a clean full-screen video. */
+.player.chrome-hidden .player__bar {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.player.chrome-hidden {
+  cursor: none;
 }
 .player__back {
   background: none;
@@ -1007,8 +1029,8 @@ button {
 }
 
 .player__frame {
-  flex: 1;
-  position: relative;
+  position: absolute;
+  inset: 0;
 }
 .player__frame iframe {
   position: absolute;
@@ -1198,22 +1220,9 @@ input:focus-visible {
 .tv-mode .row__arrow {
   display: none !important;
 }
-/* Player: give the video the whole screen and float the toolbar on top so it
-   only appears when you press Back to reveal the options (source, episodes,
-   exit). By default it's slid out of view for a clean full-screen video. */
-.tv-mode .player__bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 6;
-  height: 64px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0));
-  transition: transform 0.2s ease;
-}
-.tv-mode .player.tv-bar-hidden .player__bar {
-  transform: translateY(-100%);
-}
+/* The floating/auto-hiding toolbar is now shared base behaviour (see
+   .player__bar / .player.chrome-hidden). On Fire TV it's revealed by the
+   remote (see tv.js) rather than by mouse movement. */
 .tv-mode #playerFrame:focus {
   outline: none;
 }

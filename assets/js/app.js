@@ -946,6 +946,46 @@
     );
     $("#playerBack").addEventListener("click", UI.closePlayer);
 
+    // Auto-hide the floating player toolbar (like a real video player). On
+    // desktop/web it reveals on mouse movement and fades after a few seconds
+    // of inactivity. On Fire TV the toolbar is driven by the remote (tv.js),
+    // so we leave it alone there.
+    (function initPlayerChrome() {
+      const player = $("#player");
+      const bar = player.querySelector(".player__bar");
+      const isTv = () => document.documentElement.classList.contains("tv-mode");
+      let hideTimer;
+      let overBar = false;
+      const scheduleHide = () => {
+        clearTimeout(hideTimer);
+        if (isTv() || overBar || player.hidden) return;
+        hideTimer = setTimeout(() => player.classList.add("chrome-hidden"), 3000);
+      };
+      const showBar = () => {
+        if (isTv() || player.hidden) return;
+        player.classList.remove("chrome-hidden");
+        scheduleHide();
+      };
+      player.addEventListener("mousemove", showBar);
+      bar.addEventListener("mouseenter", () => {
+        overBar = true;
+        clearTimeout(hideTimer);
+        player.classList.remove("chrome-hidden");
+      });
+      bar.addEventListener("mouseleave", () => {
+        overBar = false;
+        scheduleHide();
+      });
+      new MutationObserver(() => {
+        if (player.hidden) {
+          clearTimeout(hideTimer);
+          player.classList.remove("chrome-hidden");
+        } else {
+          showBar();
+        }
+      }).observe(player, { attributes: true, attributeFilter: ["hidden"] });
+    })();
+
     // Player: source picker
     $("#sourceSelect").addEventListener("change", (e) => {
       Player.setSourceId(e.target.value);

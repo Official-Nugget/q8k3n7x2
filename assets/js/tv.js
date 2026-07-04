@@ -103,7 +103,7 @@
     const player = $("#player");
     if (!player || player.hidden) return;
     const onBar = !!(target && target.closest && target.closest(".player__bar"));
-    player.classList.toggle("tv-bar-hidden", !onBar);
+    player.classList.toggle("chrome-hidden", !onBar);
   }
 
   function focusEl(el) {
@@ -276,14 +276,14 @@
     const frame = $("#playerFrame");
     if (!frame) return;
     const player = $("#player");
-    if (player) player.classList.add("tv-bar-hidden"); // fullscreen video
+    if (player) player.classList.add("chrome-hidden"); // fullscreen video
     const grab = () => {
       try {
         frame.focus();
       } catch (e) {
         /* ignore */
       }
-      if (player) player.classList.add("tv-bar-hidden");
+      if (player) player.classList.add("chrome-hidden");
     };
     setTimeout(grab, 300);
     frame.addEventListener("load", grab, { once: true });
