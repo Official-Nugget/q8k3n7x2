@@ -17,6 +17,12 @@ jobs:
   build:
     strategy:
       fail-fast: false
+      # IMPORTANT: run one platform at a time. If macOS and Windows publish in
+      # parallel they can BOTH create the GitHub release for the tag at the same
+      # instant, producing two duplicate releases with the assets split between
+      # them (that's why the Windows .exe "went missing"). Serializing means the
+      # first job creates the release and the second uploads into that same one.
+      max-parallel: 1
       matrix:
         include:
           - os: macos-latest

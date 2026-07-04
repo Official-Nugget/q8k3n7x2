@@ -68,8 +68,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          # Create the release if it doesn't exist yet (the Windows/Mac workflow
-          # may create it too — ignore the error if it's already there), then
-          # upload the APK, overwriting any previous copy.
-          gh release create "$TAG" --title "$TAG" --notes "Club Sandwich Streaming $TAG" || true
+          # The desktop (Windows/macOS) workflow is the release CREATOR. To avoid
+          # racing it and producing a duplicate release for the same tag, wait for
+          # that release to appear, THEN just upload the APK into it. Only create
+          # the release ourselves as a last resort (e.g. the desktop build failed).
+          for i in $(seq 1 40); do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "Release $TAG found — uploading APK."
+              break
+            fi
+            echo "Waiting for release $TAG to be created by the desktop build… ($i/40)"
+            sleep 30
+          done
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "$TAG" --notes "Club Sandwich Streaming $TAG"
           gh release upload "$TAG" dist-apk/Club-Sandwich-Streaming-firetv.apk --clobber
