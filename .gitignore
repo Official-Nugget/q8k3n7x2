@@ -3,3 +3,5 @@ release/
 dist/
 www/
 npm-debug.log*
+
+boot-out.txt
