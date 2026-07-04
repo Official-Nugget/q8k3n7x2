@@ -408,6 +408,23 @@
     <!-- ===================== TOAST / SETUP NOTICE ===================== -->
     <div class="notice" id="notice" hidden></div>
 
+    <!-- ===================== AUTO-UPDATE BANNER (desktop) ===================== -->
+    <div class="update" id="updateBanner" hidden aria-live="polite">
+      <div class="update__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+      </div>
+      <div class="update__body">
+        <div class="update__title" id="updateTitle">Update available</div>
+        <div class="update__sub" id="updateSub">Downloading the latest version…</div>
+        <div class="update__bar" id="updateBar"><span id="updateFill"></span></div>
+      </div>
+      <div class="update__actions" id="updateActions" hidden>
+        <button class="update__btn update__btn--primary" id="updateRestart" type="button">Restart &amp; update</button>
+        <button class="update__btn" id="updateLater" type="button">Later</button>
+      </div>
+      <button class="update__close" id="updateClose" type="button" aria-label="Dismiss">&times;</button>
+    </div>
+
     <!--
     <footer class="footer">
       <p>

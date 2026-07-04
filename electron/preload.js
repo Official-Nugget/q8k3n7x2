@@ -21,8 +21,13 @@ contextBridge.exposeInMainWorld("desktop", {
   // Auto-update notifications
   onUpdateAvailable: (cb) =>
     ipcRenderer.on("update:available", (_e, info) => cb(info)),
+  onUpdateProgress: (cb) =>
+    ipcRenderer.on("update:progress", (_e, info) => cb(info)),
   onUpdateDownloaded: (cb) =>
     ipcRenderer.on("update:downloaded", (_e, info) => cb(info)),
+  onUpdateError: (cb) => ipcRenderer.on("update:error", (_e, info) => cb(info)),
+  // Install the downloaded update immediately and relaunch.
+  installUpdate: () => ipcRenderer.send("update:install"),
 
   // Open a link in the real browser (e.g. to cast to a TV via Chrome)
   openExternal: (url) => ipcRenderer.send("open-external", url),

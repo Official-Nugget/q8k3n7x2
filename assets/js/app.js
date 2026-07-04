@@ -1173,22 +1173,70 @@
     $("#winClose").addEventListener("click", () => window.desktop.close());
   }
 
-  // ---------- Auto-update toasts ----------
+  // ---------- Auto-update banner ----------
   function initUpdateNotifications() {
     if (!window.desktop?.onUpdateAvailable) return;
-    window.desktop.onUpdateAvailable((info) =>
-      UI.notice(
-        `A new version${
-          info?.version ? " (v" + info.version + ")" : ""
-        } is downloading…`
-      )
-    );
-    window.desktop.onUpdateDownloaded(() =>
-      UI.notice(
-        "Update ready — it installs automatically when you close the app.",
-        true
-      )
-    );
+
+    const banner = $("#updateBanner");
+    const titleEl = $("#updateTitle");
+    const subEl = $("#updateSub");
+    const fill = $("#updateFill");
+    const actions = $("#updateActions");
+    let ready = false;
+
+    const show = () => {
+      banner.hidden = false;
+      requestAnimationFrame(() => banner.classList.add("is-in"));
+    };
+    const hide = () => {
+      banner.classList.remove("is-in");
+      setTimeout(() => (banner.hidden = true), 350);
+    };
+    const fmtVer = (info) => (info?.version ? " v" + info.version : "");
+
+    window.desktop.onUpdateAvailable((info) => {
+      ready = false;
+      banner.classList.remove("is-ready");
+      actions.hidden = true;
+      titleEl.textContent = "Updating Club Sandwich";
+      subEl.textContent = `Downloading${fmtVer(info)}…`;
+      fill.style.width = "0%";
+      show();
+    });
+
+    window.desktop.onUpdateProgress((p) => {
+      if (ready) return;
+      const pct = Math.round(p?.percent || 0);
+      fill.style.width = pct + "%";
+      const mbps = (p?.bytesPerSecond || 0) / (1024 * 1024);
+      subEl.textContent =
+        mbps > 0.05
+          ? `Downloading… ${pct}%  ·  ${mbps.toFixed(1)} MB/s`
+          : `Downloading… ${pct}%`;
+      show();
+    });
+
+    window.desktop.onUpdateDownloaded((info) => {
+      ready = true;
+      banner.classList.add("is-ready");
+      titleEl.textContent = `Update ready${fmtVer(info)}`;
+      subEl.textContent =
+        "Restart now to finish, or it'll update next time you close the app.";
+      actions.hidden = false;
+      show();
+    });
+
+    window.desktop.onUpdateError?.(() => {
+      // Only surface errors if we weren't already mid-download UI.
+      if (!banner.hidden && !ready) hide();
+    });
+
+    $("#updateRestart").addEventListener("click", () => {
+      $("#updateRestart").textContent = "Restarting…";
+      window.desktop.installUpdate?.();
+    });
+    $("#updateLater").addEventListener("click", hide);
+    $("#updateClose").addEventListener("click", hide);
   }
 
   // ---------- Init ----------

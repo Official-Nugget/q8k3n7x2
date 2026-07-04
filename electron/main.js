@@ -84,6 +84,9 @@ ipcMain.handle("window:is-maximized", () => mainWindow?.isMaximized() ?? false);
 ipcMain.on("discord:set", (_e, info) => rpc.setPresence(info));
 ipcMain.on("discord:clear", () => rpc.clearPresence());
 
+// ---- Auto-update: "Restart & update now" from the renderer ----
+ipcMain.on("update:install", () => updater.installNow());
+
 // ---- Open a URL in the real browser (used for "Cast / open in browser") ----
 ipcMain.on("open-external", (_e, url) => {
   if (typeof url === "string" && /^https?:\/\//i.test(url)) {
