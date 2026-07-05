@@ -10,13 +10,14 @@
  * immediately and we never get "stuck" on an old build again.
  */
 
-const CACHE = "cs-stream-v5";
+const CACHE = "cs-stream-v6";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/css/style.css",
   "./assets/js/config.js",
+  "./assets/js/shield.js",
   "./assets/js/tmdb.js",
   "./assets/js/player.js",
   "./assets/js/ui.js",

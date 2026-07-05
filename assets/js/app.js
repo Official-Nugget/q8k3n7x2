@@ -916,9 +916,11 @@
 
   // ---------- Nav ----------
   function setActiveNav(view) {
-    document.querySelectorAll(".nav a, .logo").forEach((a) => {
-      a.classList.toggle("active", a.dataset.nav === view);
-    });
+    document
+      .querySelectorAll(".nav a, .logo, .mobnav__item")
+      .forEach((a) => {
+        a.classList.toggle("active", a.dataset.nav === view);
+      });
   }
 
   function getScroller() {
@@ -1004,6 +1006,10 @@
         scheduleHide();
       };
       player.addEventListener("mousemove", showBar);
+      player.addEventListener("touchend", showBar, { passive: true });
+      player
+        .querySelector(".player__frame")
+        ?.addEventListener("touchend", showBar, { passive: true });
       bar.addEventListener("mouseenter", () => {
         overBar = true;
         clearTimeout(hideTimer);

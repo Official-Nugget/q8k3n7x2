@@ -13,6 +13,11 @@
   --radius: 10px;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   --header-h: 68px;
+  --mobnav-h: 0px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -139,6 +144,7 @@ img {
 button {
   font-family: inherit;
   cursor: pointer;
+  -webkit-tap-highlight-color: rgba(255, 159, 28, 0.15);
 }
 
 ::-webkit-scrollbar {
@@ -1464,22 +1470,85 @@ input:focus-visible {
   border-radius: 2px;
 }
 
+/* ===================== MOBILE BOTTOM NAV ===================== */
+.mobnav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 55;
+  height: calc(var(--mobnav-h) + var(--safe-bottom));
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: rgba(20, 17, 11, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid #2a2113;
+  justify-content: space-around;
+  align-items: stretch;
+}
+.mobnav__item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: color 0.15s;
+  min-height: 44px;
+}
+.mobnav__item svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+.mobnav__item.active {
+  color: var(--accent);
+}
+.mobnav__item:active {
+  opacity: 0.75;
+}
+.tv-mode .mobnav {
+  display: none !important;
+}
+
+/* Hide bottom nav when a full-screen overlay is open */
+body:has(#player:not([hidden])) .mobnav,
+body:has(#modal:not([hidden])) .mobnav,
+body:has(#trailer:not([hidden])) .mobnav,
+body:has(#authModal:not([hidden])) .mobnav,
+body:has(#profilesOverlay:not([hidden])) .mobnav {
+  display: none !important;
+}
+
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 720px) {
+  :root {
+    --mobnav-h: 58px;
+    --header-h: 56px;
+  }
+  .tv-mode {
+    --mobnav-h: 0px;
+  }
+  html:not(.is-electron):not(.tv-mode) body {
+    padding-bottom: calc(var(--mobnav-h) + var(--safe-bottom));
+  }
+  .mobnav {
+    display: flex;
+  }
   .nav {
     display: none;
   }
-  .player__title {
-    max-width: 28vw;
-  }
-  .player__source label {
-    display: none;
-  }
-  /* Keep logo + search + account all on one line without pushing the account
-     button off-screen (that's why sign-in "disappeared" on phones). */
   .header {
-    padding: 0 12px;
+    padding: var(--safe-top) calc(12px + var(--safe-right)) 0
+      calc(12px + var(--safe-left));
     gap: 8px;
+    height: calc(var(--header-h) + var(--safe-top));
   }
   .logo {
     font-size: 18px;
@@ -1497,6 +1566,7 @@ input:focus-visible {
   .search input {
     width: 100%;
     min-width: 0;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
   }
   .account {
     flex-shrink: 0;
@@ -1505,20 +1575,160 @@ input:focus-visible {
     padding: 4px 10px 4px 4px;
   }
   .hero {
-    height: 70vh;
+    height: 68vh;
+    min-height: 360px;
+  }
+  .hero__content {
+    padding-bottom: 5vh;
+  }
+  .hero__overview {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+  .btn {
+    padding: 11px 18px;
+    font-size: 15px;
+    min-height: 44px;
   }
   .card {
     width: 130px;
   }
-  .episode__thumb {
-    width: 90px;
+  .rows {
+    padding-bottom: calc(24px + var(--mobnav-h) + var(--safe-bottom));
+  }
+  .row__title {
+    font-size: 18px;
+  }
+  .grid-view {
+    padding: calc(var(--header-h) + var(--safe-top) + 16px) calc(4vw + var(--safe-right))
+      calc(48px + var(--mobnav-h) + var(--safe-bottom)) calc(4vw + var(--safe-left));
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 10px;
+  }
+  .filters {
+    gap: 10px;
+    padding: 12px;
+  }
+  .filter {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 120px;
+  }
+  .filter__reset {
+    margin-left: 0;
+    width: 100%;
+    min-height: 44px;
+  }
+  .select {
+    min-height: 44px;
+    font-size: 16px;
   }
   .modal {
     padding: 0;
   }
   .modal__dialog {
     border-radius: 0;
-    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+  }
+  .modal__hero {
+    min-height: 200px;
+    aspect-ratio: 16 / 10;
+  }
+  .modal__hero-title {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    font-size: 26px;
+  }
+  .modal__content {
+    padding: 8px 16px 32px;
+  }
+  .modal__actions .btn {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+  }
+  .modal__overview {
+    font-size: 15px;
+  }
+  .episode {
+    gap: 10px;
+    padding: 10px 8px;
+  }
+  .episode__thumb {
+    width: 90px;
+  }
+  .player__bar {
+    padding: var(--safe-top) 10px 0;
+    gap: 8px;
+    height: calc(52px + var(--safe-top));
+  }
+  .player__title {
+    max-width: 28vw;
+    font-size: 13px;
+  }
+  .player__source label {
+    display: none;
+  }
+  .player__back {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+  .player__navbtn {
+    padding: 8px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .player__iconbtn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  .settings-pop {
+    right: 0;
+    left: auto;
+    max-width: calc(100vw - 24px);
+  }
+  .signin-cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .signin-cta__btn {
+    width: 100%;
+    min-height: 44px;
+  }
+  .account__menu {
+    right: calc(-4px + var(--safe-right));
+    min-width: min(280px, calc(100vw - 24px));
+  }
+  .auth__dialog {
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    min-height: 100dvh;
+    padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+  }
+  .auth__submit,
+  .auth__google {
+    min-height: 48px;
+  }
+  .auth__field input {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .profiles__grid {
+    gap: 14px;
+  }
+  .update {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: calc(12px + var(--mobnav-h) + var(--safe-bottom));
+  }
+  .notice {
+    bottom: calc(24px + var(--mobnav-h) + var(--safe-bottom));
   }
 }
 
@@ -1537,6 +1747,16 @@ input:focus-visible {
   .account__avatar {
     width: 26px;
     height: 26px;
+  }
+  .account__label {
+    display: none;
+  }
+  .hero__actions {
+    flex-wrap: wrap;
+  }
+  .hero__actions .btn {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
   }
 }
 

@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Club Sandwich Streaming — Watch Movies & TV</title>
     <meta
       name="description"
       content="Club Sandwich Streaming — watch movies and TV shows. Powered by TMDB & VidLink."
     />
-    <meta name="theme-color" content="#14110b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" href="assets/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
@@ -203,6 +204,30 @@
     </section>
     </div>
     <!-- /viewport -->
+
+    <!-- ===================== MOBILE BOTTOM NAV (phones / narrow web) ===================== -->
+    <nav class="mobnav" id="mobNav" aria-label="Main navigation">
+      <a href="#" class="mobnav__item active" data-nav="home" aria-label="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="#" class="mobnav__item" data-nav="movie" aria-label="Movies">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+        <span>Movies</span>
+      </a>
+      <a href="#" class="mobnav__item" data-nav="tv" aria-label="TV Shows">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+        <span>TV</span>
+      </a>
+      <a href="#" class="mobnav__item" data-nav="browse" aria-label="Browse">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+        <span>Browse</span>
+      </a>
+      <a href="#" class="mobnav__item" data-nav="mylist" aria-label="My List">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+        <span>My List</span>
+      </a>
+    </nav>
 
     <!-- ===================== DETAIL MODAL ===================== -->
     <div class="modal" id="modal" hidden>
@@ -446,6 +471,7 @@
     <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
 
     <script src="assets/js/config.js"></script>
+    <script src="assets/js/shield.js"></script>
     <script src="assets/js/tmdb.js"></script>
     <script src="assets/js/player.js"></script>
     <script src="assets/js/ui.js"></script>
