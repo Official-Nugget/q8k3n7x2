@@ -118,6 +118,8 @@ html.is-electron {
 }
 .is-electron #player {
   top: var(--titlebar-h);
+  height: calc(100vh - var(--titlebar-h));
+  height: calc(100dvh - var(--titlebar-h));
 }
 
 html {

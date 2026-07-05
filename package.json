@@ -1,7 +1,7 @@
 {
   "name": "club-sandwich-streaming",
   "productName": "Club Sandwich Streaming",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Club Sandwich Streaming — a movie & TV streaming desktop app (TMDB + VidLink).",
   "main": "electron/main.js",
   "author": "Club Sandwich",
@@ -67,7 +67,7 @@
       {
         "provider": "github",
         "owner": "Official-Nugget",
-        "repo": "VideoPlayer",
+        "repo": "q8k3n7x2",
         "releaseType": "release"
       }
     ]

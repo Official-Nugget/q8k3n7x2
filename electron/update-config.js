@@ -19,5 +19,5 @@
 
 module.exports = {
   OWNER: "Official-Nugget",
-  REPO: "VideoPlayer",
+  REPO: "q8k3n7x2",
 };
