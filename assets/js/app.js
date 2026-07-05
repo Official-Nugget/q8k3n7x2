@@ -633,7 +633,9 @@
     gridView.hidden = false;
     $("#filters").hidden = !filters;
     $("#gridTitle").textContent = title;
-    $("#grid").innerHTML = '<div class="spinner"></div>';
+    const grid = $("#grid");
+    grid.innerHTML = "";
+    grid.appendChild(UI.skeletonGrid(12));
   }
 
   // ---------- Filters / Browse ----------

@@ -78,6 +78,18 @@ const UI = (() => {
     return frag;
   }
 
+  // Poster-shaped placeholders for search / browse grids.
+  function skeletonGrid(count = 12) {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement("div");
+      s.className = "skeleton-card skeleton-card--grid";
+      s.setAttribute("aria-hidden", "true");
+      frag.appendChild(s);
+    }
+    return frag;
+  }
+
   // Build an empty row container; returns { section, track } so app can fill it.
   // opts.action = { label, onClick } renders a small button beside the title.
   function rowShell(title, opts = {}) {
@@ -229,6 +241,7 @@ const UI = (() => {
     card,
     rowShell,
     skeletonRow,
+    skeletonGrid,
     renderHero,
     openModal,
     closeModal,
