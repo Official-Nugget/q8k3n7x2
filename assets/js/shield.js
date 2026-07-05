@@ -165,8 +165,6 @@
 
     window.addEventListener("blur", () => {
       if (!playerOpen) return;
-      const gate = document.getElementById("playerGate");
-      if (gate && !gate.hidden) return; // user hasn't tapped play yet
       window.setTimeout(() => {
         if (!player.hidden) window.focus();
       }, 0);

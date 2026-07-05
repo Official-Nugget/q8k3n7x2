@@ -984,7 +984,6 @@
       el.addEventListener("click", UI.closeTrailer)
     );
     $("#playerBack").addEventListener("click", UI.closePlayer);
-    $("#playerGateBtn")?.addEventListener("click", () => UI.confirmPlayerStart());
 
     // Auto-hide the floating player toolbar (like a real video player). On
     // desktop/web it reveals on mouse movement and fades after a few seconds
@@ -1084,7 +1083,16 @@
       $("#setResume").checked = !!s.resume;
       $("#setRemember").checked = !!s.rememberSource;
       $("#setAutoNext").checked = !!s.autoNext;
+      const langSel = $("#setSubLang");
+      if (langSel) langSel.value = s.subLang || "en";
     };
+    const langSel = $("#setSubLang");
+    if (langSel) {
+      langSel.innerHTML = CONFIG.SUBTITLE_LANGUAGES.map(
+        (l) =>
+          `<option value="${l.code}">${UI.escapeHtml(l.label)}</option>`
+      ).join("");
+    }
     syncSettingsUI();
     $("#setAutoplay").addEventListener("change", (e) => {
       Player.setSettings({ autoplay: e.target.checked });
@@ -1099,6 +1107,10 @@
     });
     $("#setAutoNext").addEventListener("change", (e) => {
       Player.setSettings({ autoNext: e.target.checked });
+    });
+    $("#setSubLang")?.addEventListener("change", (e) => {
+      Player.setSettings({ subLang: e.target.value });
+      Playback.reload();
     });
 
     // Keyboard shortcuts

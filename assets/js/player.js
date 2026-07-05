@@ -97,10 +97,12 @@ const Player = (() => {
     // Template-based backup source.
     const tpl = ctx.media === "movie" ? src.movie : src.tv;
     if (!tpl) return "about:blank";
+    const lang = settings.subLang || "en";
     return tpl
       .replaceAll("{id}", ctx.id)
-      .replaceAll("{season}", ctx.season)
-      .replaceAll("{episode}", ctx.episode);
+      .replaceAll("{season}", ctx.season ?? "")
+      .replaceAll("{episode}", ctx.episode ?? "")
+      .replaceAll("{lang}", lang);
   }
 
   // ---------------- Continue-watching progress ----------------

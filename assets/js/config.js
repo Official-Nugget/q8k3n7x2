@@ -56,6 +56,13 @@ const CONFIG = {
     { id: "vidlink", name: "VidLink (recommended)", vidlink: true, engine: "default" },
     { id: "vidlink-jw", name: "VidLink · JW Player", vidlink: true, engine: "jw" },
     {
+      id: "vidsrc",
+      name: "VidSrc (subtitles)",
+      movie:
+        "https://vidsrc-embed.ru/embed/movie?tmdb={id}&ds_lang={lang}&autoplay=1",
+      tv: "https://vidsrc-embed.ru/embed/tv?tmdb={id}&season={season}&episode={episode}&ds_lang={lang}&autoplay=1",
+    },
+    {
       id: "vidsrccc",
       name: "VidSrc.cc (backup)",
       movie: "https://vidsrc.cc/v2/embed/movie/{id}",
@@ -87,12 +94,29 @@ const CONFIG = {
     },
   ],
 
+  // ISO 639-1 codes — used by VidSrc's ds_lang subtitle parameter.
+  SUBTITLE_LANGUAGES: [
+    { code: "en", label: "English" },
+    { code: "es", label: "Spanish" },
+    { code: "fr", label: "French" },
+    { code: "de", label: "German" },
+    { code: "pt", label: "Portuguese" },
+    { code: "it", label: "Italian" },
+    { code: "ja", label: "Japanese" },
+    { code: "ko", label: "Korean" },
+    { code: "zh", label: "Chinese" },
+    { code: "ar", label: "Arabic" },
+    { code: "hi", label: "Hindi" },
+    { code: "ru", label: "Russian" },
+  ],
+
   // --- Default playback settings (user can toggle these in the player) ---
   SETTINGS_DEFAULTS: {
     autoplay: true,
     resume: true, // resume from last watched position (VidLink only)
     rememberSource: true, // remember the last picked source
     autoNext: true, // auto-advance to the next episode when one ends (TV)
+    subLang: "en", // preferred subtitle language (VidSrc sources)
   },
 
   // --- localStorage keys ---

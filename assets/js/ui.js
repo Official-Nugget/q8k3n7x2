@@ -153,52 +153,15 @@ const UI = (() => {
   }
 
   // ---------- Player overlay ----------
-  let pendingPlayerUrl = null;
-
-  // Browsers mute cross-origin autoplay unless the user taps the player itself.
-  // Electron loads the iframe immediately (no autoplay policy + full ad blocking).
-  function needsPlayGate() {
-    return !window.desktop?.isElectron;
-  }
-
   function openPlayer(title) {
     $("#playerTitle").textContent = title || "";
     $("#player").hidden = false;
     document.body.style.overflow = "hidden";
   }
   function setPlayerFrame(url) {
-    const frame = $("#playerFrame");
-    const gate = $("#playerGate");
-    if (!url || url === "about:blank") {
-      pendingPlayerUrl = null;
-      if (gate) gate.hidden = true;
-      frame.src = "about:blank";
-      return;
-    }
-    if (needsPlayGate()) {
-      pendingPlayerUrl = url;
-      frame.src = "about:blank";
-      if (gate) {
-        gate.hidden = false;
-        requestAnimationFrame(() => $("#playerGateBtn")?.focus());
-      }
-      return;
-    }
-    pendingPlayerUrl = null;
-    if (gate) gate.hidden = true;
-    frame.src = url;
-  }
-  function confirmPlayerStart() {
-    if (!pendingPlayerUrl) return;
-    const gate = $("#playerGate");
-    if (gate) gate.hidden = true;
-    $("#playerFrame").src = pendingPlayerUrl;
-    pendingPlayerUrl = null;
+    $("#playerFrame").src = url;
   }
   function closePlayer() {
-    pendingPlayerUrl = null;
-    const gate = $("#playerGate");
-    if (gate) gate.hidden = true;
     $("#playerFrame").src = "about:blank";
     $("#player").hidden = true;
     $("#settingsPop").hidden = true;
@@ -271,7 +234,6 @@ const UI = (() => {
     closeModal,
     openPlayer,
     setPlayerFrame,
-    confirmPlayerStart,
     closePlayer,
     openTrailer,
     closeTrailer,

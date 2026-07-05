@@ -10,7 +10,7 @@
  * immediately and we never get "stuck" on an old build again.
  */
 
-const CACHE = "cs-stream-v8";
+const CACHE = "cs-stream-v9";
 const ASSETS = [
   "./",
   "./index.html",
