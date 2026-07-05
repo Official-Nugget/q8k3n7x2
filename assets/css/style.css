@@ -852,7 +852,7 @@ button {
     rgba(8, 6, 4, 0.72) 55%,
     rgba(8, 6, 4, 0) 100%
   );
-  transition: opacity 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
   pointer-events: none;
 }
 .player__bar-inner {
@@ -877,12 +877,18 @@ button {
 .player.chrome-hidden .player__bar {
   opacity: 0;
   pointer-events: none;
+  transform: translateY(-100%);
 }
-.player--touch.chrome-hidden .player__bar {
-  opacity: 1;
+/* Touch: when chrome is hidden, a tap anywhere reveals it briefly. */
+.player.chrome-hidden .player__pointer-layer {
+  z-index: 7;
+  pointer-events: auto;
+  cursor: none;
+  -webkit-tap-highlight-color: transparent;
 }
-/* Sits below the iframe while controls are visible; rises above only when hidden
-   so desktop mouse movement can still reveal the bar over cross-origin embeds. */
+.player:not(.chrome-hidden) .player__pointer-layer {
+  pointer-events: none;
+}
 .player__pointer-layer {
   position: absolute;
   inset: 0;
@@ -890,14 +896,6 @@ button {
   background: transparent;
   touch-action: manipulation;
   pointer-events: none;
-}
-.player.chrome-hidden .player__pointer-layer {
-  z-index: 7;
-  pointer-events: auto;
-  cursor: none;
-}
-.player--touch .player__pointer-layer {
-  display: none;
 }
 body:has(#player:not([hidden])) .header {
   opacity: 0;

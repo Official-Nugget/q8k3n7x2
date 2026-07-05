@@ -175,14 +175,15 @@ const UI = (() => {
   }
   function setPlayerFrame(url) {
     const frame = $("#playerFrame");
-    const load = () => {
-      frame.src = url;
-    };
-    // iOS Safari can render a zero-height iframe if src is set before layout.
     const touch =
       window.matchMedia("(hover: none)").matches ||
       window.matchMedia("(pointer: coarse)").matches;
+    const load = () => {
+      frame.src = url;
+    };
+    // iOS Safari: layout first, blank the frame, then load (fixes black screen).
     if (touch) {
+      frame.src = "about:blank";
       requestAnimationFrame(() => requestAnimationFrame(load));
     } else {
       load();

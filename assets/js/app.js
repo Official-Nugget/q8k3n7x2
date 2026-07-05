@@ -996,17 +996,11 @@
       const bar = player.querySelector(".player__bar");
       const pointerLayer = $("#playerPointerLayer");
       const isTv = () => document.documentElement.classList.contains("tv-mode");
-      const isTouchUI =
-        window.matchMedia("(hover: none)").matches ||
-        window.matchMedia("(pointer: coarse)").matches;
       const HIDE_MS = 3000;
       let hideTimer;
       let overBar = false;
 
-      if (isTouchUI) player.classList.add("player--touch");
-
       const scheduleHide = () => {
-        if (isTouchUI) return;
         clearTimeout(hideTimer);
         if (isTv() || overBar || player.hidden) return;
         hideTimer = setTimeout(() => {
@@ -1020,13 +1014,19 @@
         scheduleHide();
       };
 
-      if (!isTouchUI) {
-        pointerLayer?.addEventListener("mousemove", showBar);
-        pointerLayer?.addEventListener("touchstart", showBar, { passive: true });
-      }
+      const hideBarNow = () => {
+        clearTimeout(hideTimer);
+        player.classList.add("chrome-hidden");
+      };
+
+      pointerLayer?.addEventListener("mousemove", showBar);
+      pointerLayer?.addEventListener("touchstart", showBar, { passive: true });
       const barInner = bar.querySelector(".player__bar-inner");
       barInner?.addEventListener("mousemove", showBar);
-      barInner?.addEventListener("touchstart", showBar, { passive: true });
+      barInner?.addEventListener("touchstart", (e) => {
+        e.stopPropagation();
+        showBar();
+      });
       barInner?.addEventListener("mouseenter", () => {
         overBar = true;
         clearTimeout(hideTimer);
@@ -1036,6 +1036,18 @@
         overBar = false;
         scheduleHide();
       });
+
+      // Hide chrome when the page goes to native / system fullscreen views.
+      const syncFullscreenChrome = () => {
+        const fsEl =
+          document.fullscreenElement || document.webkitFullscreenElement;
+        if (fsEl || document.hidden) hideBarNow();
+        else if (!player.hidden) showBar();
+      };
+      document.addEventListener("fullscreenchange", syncFullscreenChrome);
+      document.addEventListener("webkitfullscreenchange", syncFullscreenChrome);
+      document.addEventListener("visibilitychange", syncFullscreenChrome);
+
       player.addEventListener("player:opened", showBar);
 
       new MutationObserver(() => {

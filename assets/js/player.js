@@ -84,7 +84,8 @@ const Player = (() => {
 
     if (src.vidlink) {
       const params = vidlinkParams(src.engine);
-      if (settings.resume) {
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (settings.resume && !isIOS) {
         const sec = resumeSeconds(ctx);
         if (sec > 5) params.set("startAt", String(sec));
       }
