@@ -1097,6 +1097,7 @@
 
       // Hide chrome when the page goes to native / system fullscreen views.
       const syncFullscreenChrome = () => {
+        UI.syncPlayerFullscreenUi();
         const fsEl =
           document.fullscreenElement || document.webkitFullscreenElement;
         if (fsEl || document.hidden) hideBarNow();
@@ -1105,6 +1106,10 @@
       document.addEventListener("fullscreenchange", syncFullscreenChrome);
       document.addEventListener("webkitfullscreenchange", syncFullscreenChrome);
       document.addEventListener("visibilitychange", syncFullscreenChrome);
+
+      $("#playerFullscreen")?.addEventListener("click", () => {
+        UI.togglePlayerFullscreen();
+      });
 
       player.addEventListener("player:opened", showBar);
 
@@ -1215,7 +1220,18 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (!$("#trailer").hidden) UI.closeTrailer();
-        else if (!$("#player").hidden) UI.closePlayer();
+        else if (!$("#player").hidden) {
+          const player = $("#player");
+          if (
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            player.classList.contains("player--page-fs")
+          ) {
+            UI.exitPlayerFullscreen();
+          } else {
+            UI.closePlayer();
+          }
+        }
         else if (!$("#modal").hidden) UI.closeModal();
         return;
       }

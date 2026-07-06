@@ -999,6 +999,44 @@ body.is-electron:has(#player:not([hidden])) .titlebar {
   height: 20px;
   fill: currentColor;
 }
+.player__fs-icon--exit {
+  display: none;
+}
+.player--page-fs .player__fs-icon--enter {
+  display: none;
+}
+.player--page-fs .player__fs-icon--exit {
+  display: block;
+}
+.player:fullscreen,
+.player:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  background: #000;
+}
+.is-electron .player:fullscreen,
+.is-electron .player:-webkit-full-screen {
+  top: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+.player:fullscreen .player__frame,
+.player:-webkit-full-screen .player__frame {
+  inset: 0;
+}
+/* CSS fallback when embed players block the native Fullscreen API */
+.player.player--page-fs:not(:fullscreen):not(:-webkit-full-screen) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 200;
+  width: 100% !important;
+  height: 100dvh !important;
+  max-height: none !important;
+}
+.is-electron .player.player--page-fs:not(:fullscreen):not(:-webkit-full-screen) {
+  top: 0 !important;
+}
 .player__iconbtn:hover {
   background: var(--accent);
   border-color: var(--accent);

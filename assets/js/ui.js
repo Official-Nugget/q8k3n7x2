@@ -202,7 +202,51 @@ const UI = (() => {
       load();
     }
   }
+  function exitPlayerFullscreen() {
+    const player = $("#player");
+    player?.classList.remove("player--page-fs");
+    const doc = document;
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      (doc.exitFullscreen || doc.webkitExitFullscreen)?.call(doc);
+    }
+  }
+
+  function togglePlayerFullscreen() {
+    const player = $("#player");
+    if (!player || player.hidden) return;
+    const doc = document;
+    const fs = doc.fullscreenElement || doc.webkitFullscreenElement;
+    if (fs || player.classList.contains("player--page-fs")) {
+      exitPlayerFullscreen();
+      return;
+    }
+    const req =
+      player.requestFullscreen ||
+      player.webkitRequestFullscreen ||
+      player.msRequestFullscreen;
+    if (req) {
+      Promise.resolve(req.call(player)).catch(() => {
+        player.classList.add("player--page-fs");
+      });
+    } else {
+      player.classList.add("player--page-fs");
+    }
+  }
+
+  function syncPlayerFullscreenUi() {
+    const player = $("#player");
+    if (!player) return;
+    const doc = document;
+    const fs = doc.fullscreenElement || doc.webkitFullscreenElement;
+    const active = !!(fs && (fs === player || fs.contains(player)));
+    if (active) player.classList.add("player--page-fs");
+    else if (!player.hidden) player.classList.remove("player--page-fs");
+    const btn = $("#playerFullscreen");
+    if (btn) btn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+
   function closePlayer() {
+    exitPlayerFullscreen();
     $("#playerFrame").src = "about:blank";
     const player = $("#player");
     player.hidden = true;
@@ -279,6 +323,9 @@ const UI = (() => {
     openPlayer,
     setPlayerFrame,
     closePlayer,
+    exitPlayerFullscreen,
+    togglePlayerFullscreen,
+    syncPlayerFullscreenUi,
     openTrailer,
     closeTrailer,
     notice,

@@ -66,11 +66,11 @@ function createWindow() {
   // Allow HTML5 fullscreen from stream embeds (VidSrc, 2Embed, etc.).
   const wireEmbedFullscreen = (contents) => {
     contents.on("enter-html-full-screen", () => {
-      const win = BrowserWindow.fromWebContents(contents);
+      const win = BrowserWindow.fromWebContents(contents) || mainWindow;
       if (win && !win.isDestroyed()) win.setFullScreen(true);
     });
     contents.on("leave-html-full-screen", () => {
-      const win = BrowserWindow.fromWebContents(contents);
+      const win = BrowserWindow.fromWebContents(contents) || mainWindow;
       if (win && !win.isDestroyed() && win.isFullScreen()) win.setFullScreen(false);
     });
   };
