@@ -1539,62 +1539,92 @@ input:focus-visible {
 .tv-mode .row__arrow {
   display: none !important;
 }
-.tv-mode .row__track {
-  scroll-behavior: auto;
-}
-/* Lighter home UI + less animation on TV (smoother on Fire TV hardware). */
+/* Lighter home UI on TV — layout targets 1920px (see tv.js viewport); these
+   values keep the hero/rows readable without filling the whole screen. */
 .tv-mode html {
   scroll-behavior: auto;
 }
+.tv-mode .header {
+  height: 56px;
+  padding: 0 3vw;
+}
+.tv-mode .logo {
+  font-size: 18px;
+}
+.tv-mode .nav a {
+  font-size: 13px;
+}
 .tv-mode .hero {
-  height: 50vh;
-  min-height: 260px;
+  height: 42vh;
+  min-height: 220px;
 }
 .tv-mode .hero__content {
-  padding-bottom: 4vh;
-  max-width: 520px;
+  padding: 0 3vw 3vh;
+  max-width: 480px;
 }
 .tv-mode .hero__title {
-  font-size: clamp(22px, 3vw, 38px);
-  margin-bottom: 10px;
+  font-size: 28px;
+  margin-bottom: 8px;
 }
 .tv-mode .hero__overview {
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.35;
+  margin-bottom: 12px;
   -webkit-line-clamp: 2;
 }
 .tv-mode .hero__meta {
-  font-size: 13px;
-  margin-bottom: 10px;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 .tv-mode .btn {
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 8px 14px;
+  font-size: 13px;
+  gap: 6px;
+}
+.tv-mode .btn svg {
+  width: 16px;
+  height: 16px;
 }
 .tv-mode .card {
-  width: 120px;
+  width: 105px;
+}
+.tv-mode .rows {
+  margin-top: -4vh;
 }
 .tv-mode .row {
-  margin: 16px 0;
+  margin: 12px 0;
   animation: none !important;
 }
 .tv-mode .row__title {
-  font-size: 17px;
+  font-size: 15px;
+}
+.tv-mode .row__head {
+  padding: 0 3vw;
+  margin-bottom: 8px;
 }
 .tv-mode .row__track {
-  padding: 10px 4vw 16px;
+  padding: 8px 3vw 14px;
+  gap: 10px;
+  scroll-behavior: auto;
 }
 .tv-mode .grid .card {
   animation: none !important;
+}
+.tv-mode .grid {
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
 }
 .tv-mode .card__img,
 .tv-mode .card__noimg {
   transition: none;
 }
 .tv-mode .card:focus {
-  transform: scale(1.04);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transform: scale(1.03);
+  box-shadow: 0 0 0 3px var(--accent), 0 10px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+.tv-mode .card:focus .card__overlay {
+  opacity: 0;
 }
 .tv-mode .modal__backdrop {
   backdrop-filter: none;

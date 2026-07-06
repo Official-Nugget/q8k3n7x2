@@ -36,6 +36,16 @@
 
   document.documentElement.classList.add("tv-mode");
 
+  // Fire TV reports a huge layout width — treat the UI as 1920×1080 so posters,
+  // hero, and header aren’t blown up to “phone at arm’s length” size.
+  const vpMeta = document.querySelector('meta[name="viewport"]');
+  if (vpMeta) {
+    vpMeta.setAttribute(
+      "content",
+      "width=1920, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    );
+  }
+
   const FOCUSABLE = [
     "a[data-nav]",
     "#searchInput",
@@ -543,9 +553,29 @@
     return e.key === "Enter" || e.key === "OK" || ENTER_CODES[e.keyCode];
   }
 
+  // While the embed is active, tv.js must NOT capture D-pad / OK — those keys
+  // need to reach the cross-origin iframe or the remote can’t control playback.
+  function embedControlsKeys() {
+    const player = $("#player");
+    const frame = $("#playerFrame");
+    if (!player || player.hidden || !frame) return false;
+    if (document.activeElement === frame) return true;
+    if (player.classList.contains("chrome-hidden")) {
+      try {
+        frame.focus({ preventScroll: true });
+      } catch (e) {
+        /* ignore */
+      }
+      return true;
+    }
+    return false;
+  }
+
   document.addEventListener(
     "keydown",
     (e) => {
+      if (embedControlsKeys()) return;
+
       const dir = directionOf(e);
       const active = document.activeElement;
       const tag = active ? active.tagName : "";
@@ -713,6 +743,19 @@
     if (logo) logo.setAttribute("tabindex", "-1");
     const remoteBtn = $("#playerRemote");
     if (remoteBtn) remoteBtn.addEventListener("click", enterPlayerFrame);
+    const player = $("#player");
+    const frame = $("#playerFrame");
+    if (player) {
+      player.addEventListener("player:opened", () => {
+        setTimeout(enterPlayerFrame, 200);
+        setTimeout(enterPlayerFrame, 800);
+      });
+    }
+    if (frame) {
+      frame.addEventListener("load", () => {
+        if (player && !player.hidden) enterPlayerFrame();
+      });
+    }
     setTimeout(focusScopeStart, 400);
   });
 
