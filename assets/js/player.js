@@ -65,15 +65,30 @@ const Player = (() => {
   // Reads VidLink's saved progress for this exact title/episode (in seconds).
   function resumeSeconds(ctx) {
     if (!ctx) return 0;
+    const p = playbackProgress(ctx);
+    return p ? p.watched : 0;
+  }
+
+  // Current watch position + total runtime (seconds) for Discord / UI.
+  function playbackProgress(ctx) {
+    if (!ctx) return null;
     const data = getProgress();
     const item = data[ctx.id] || data[String(ctx.id)];
-    if (!item) return 0;
+    if (!item) return null;
+
+    let progress;
     if (ctx.media === "tv") {
       const key = `s${ctx.season}e${ctx.episode}`;
-      const watched = item.show_progress?.[key]?.progress?.watched;
-      return watched ? Math.floor(watched) : 0;
+      progress = item.show_progress?.[key]?.progress;
+    } else {
+      progress = item.progress;
     }
-    return item.progress?.watched ? Math.floor(item.progress.watched) : 0;
+
+    if (!progress?.duration) return null;
+    const watched = Math.floor(progress.watched || 0);
+    const duration = Math.floor(progress.duration);
+    if (duration <= 0) return null;
+    return { watched, duration };
   }
 
   // ---------------- Build a playable URL ----------------
@@ -206,6 +221,7 @@ const Player = (() => {
     getSourceId,
     setSourceId,
     resumeSeconds,
+    playbackProgress,
     buildUrl,
     initProgressListener,
     getProgress,

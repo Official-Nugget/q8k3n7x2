@@ -10,9 +10,10 @@
  *    2. New Application  ->  name it "Club Sandwich Streaming"
  *    3. Copy the "Application ID" (that's your Client ID)
  *    4. (optional) Rich Presence -> Art Assets -> upload an image
- *       named exactly "logo" so it shows next to the status.
+ *       named exactly "logo" for a small badge on poster art.
  *
- *  Leave this blank to disable Discord presence entirely.
+ *  Poster/backdrop art is sent automatically from TMDB while you watch.
+ *  Leave LARGE_IMAGE_KEY as "logo" for the optional small badge, or "" to skip.
  * ============================================================
  */
 

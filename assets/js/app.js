@@ -213,20 +213,39 @@
     await openDetail(n);
   }
 
-  function updatePresence(ctx) {
-    if (!window.desktop?.setPresence) return;
+  let presenceTick = 0;
+
+  function updatePresence(ctx, live) {
+    if (!window.desktop?.setPresence || !ctx) return;
+
+    const now = Date.now();
+    if (live?.event === "timeupdate" && now - presenceTick < 15000) return;
+    if (live?.event === "timeupdate") presenceTick = now;
+
+    const stored = Player.playbackProgress(ctx);
+    const watched =
+      live?.currentTime != null
+        ? Math.floor(live.currentTime)
+        : stored?.watched ?? 0;
+    const duration =
+      live?.duration != null
+        ? Math.floor(live.duration)
+        : stored?.duration ?? 0;
+
     const poster = ctx.poster
       ? TMDB.img(ctx.poster, "w342")
       : ctx.backdrop
       ? TMDB.img(ctx.backdrop, "w780")
       : null;
+
     window.desktop.setPresence({
       media: ctx.media,
       title: ctx.title,
       season: ctx.season,
       episode: ctx.episode,
       poster,
-      startTimestamp: Date.now(),
+      watched: duration > 0 ? watched : 0,
+      duration,
     });
   }
 
@@ -1084,12 +1103,20 @@
       }
     });
 
-    // Auto-advance to next episode when one ends
+    // Auto-advance to next episode when one ends; refresh Discord on playback ticks.
     document.addEventListener("player:event", (e) => {
-      if (e.detail?.event !== "ended") return;
+      const ev = e.detail?.event;
+      if (ev === "timeupdate" || ev === "seeked" || ev === "play") {
+        if (Playback.ctx) updatePresence(Playback.ctx, e.detail);
+      }
+      if (ev !== "ended") return;
       if (!Player.getSettings().autoNext) return;
       const next = Playback.nextTarget();
       if (next) Playback.go(next);
+    });
+
+    document.addEventListener("progress:updated", () => {
+      if (Playback.ctx) updatePresence(Playback.ctx);
     });
 
     // Player: settings popover

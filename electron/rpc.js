@@ -41,31 +41,93 @@ async function connect() {
 // Discord ActivityType.Watching → the status reads "Watching <app name>".
 const WATCHING = 3;
 
+function formatClock(totalSec) {
+  const s = Math.max(0, Math.floor(totalSec));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(sec).padStart(2, "0");
+  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
+
+function presenceState(info) {
+  const isTv = info.media === "tv" && info.season && info.episode;
+  const watched = Number(info.watched) || 0;
+  const duration = Number(info.duration) || 0;
+  const hasProgress = duration > 0;
+
+  if (isTv) {
+    let state = `Season ${info.season} · Episode ${info.episode}`;
+    if (hasProgress) {
+      const pct = Math.min(100, Math.round((watched / duration) * 100));
+      state += ` · ${pct}% (${formatClock(watched)} / ${formatClock(duration)})`;
+    }
+    return state.slice(0, 128);
+  }
+
+  if (info.media === "movie" && hasProgress) {
+    const pct = Math.min(100, Math.round((watched / duration) * 100));
+    return `${pct}% · ${formatClock(watched)} / ${formatClock(duration)}`.slice(
+      0,
+      128
+    );
+  }
+
+  if (info.media === "movie") return "Watching a movie";
+  return undefined;
+}
+
+function imageKey(urlOrKey) {
+  if (!urlOrKey) return null;
+  const s = String(urlOrKey).trim();
+  if (!s) return null;
+  if (/^https?:\/\//i.test(s)) return s;
+  return s;
+}
+
 function apply(info) {
   if (!client || !ready) return;
   try {
-    const isTv = info.media === "tv" && info.season && info.episode;
     const title = info.title ? String(info.title).slice(0, 128) : "Browsing";
+    const watched = Number(info.watched) || 0;
+    const duration = Number(info.duration) || 0;
+    const hasProgress = duration > watched && duration > 0;
+
     const activity = {
       type: WATCHING,
       details: title,
-      state: isTv
-        ? `Season ${info.season} · Episode ${info.episode}`.slice(0, 128)
-        : info.media === "movie"
-        ? "Watching a movie"
-        : undefined,
-      startTimestamp: info.startTimestamp || Date.now(),
+      state: presenceState(info),
       instance: false,
     };
 
-    // IMPORTANT: Discord's `large_image` must be an uploaded Art Asset KEY
-    // (e.g. "logo"), NOT a raw image URL. Passing a URL makes Discord reject
-    // the whole presence, so nothing shows at all. We only attach an image if
-    // a real asset key is configured in discord-config.js.
-    const key = (LARGE_IMAGE_KEY || "").trim();
-    if (key) {
-      activity.largeImageKey = key;
-      activity.largeImageText = info.title || "Club Sandwich Streaming";
+    // Progress bar in Discord (elapsed / total).
+    if (hasProgress) {
+      const now = Date.now();
+      activity.startTimestamp = now - watched * 1000;
+      activity.endTimestamp = activity.startTimestamp + duration * 1000;
+    } else {
+      activity.startTimestamp = Date.now();
+    }
+
+    // Poster / backdrop URL (Discord accepts public https URLs as image keys).
+    const poster = imageKey(info.poster);
+    const fallbackKey = imageKey(LARGE_IMAGE_KEY);
+    if (poster) {
+      activity.largeImageKey = poster;
+      activity.largeImageText = title;
+    } else if (fallbackKey && !/^https?:\/\//i.test(fallbackKey)) {
+      activity.largeImageKey = fallbackKey;
+      activity.largeImageText = title;
+    } else if (fallbackKey) {
+      activity.largeImageKey = fallbackKey;
+      activity.largeImageText = "Club Sandwich Streaming";
+    }
+
+  // Small badge: app logo asset if configured (upload "logo" in Dev Portal).
+    if (fallbackKey && !/^https?:\/\//i.test(fallbackKey) && poster) {
+      activity.smallImageKey = fallbackKey;
+      activity.smallImageText = "Club Sandwich";
     }
 
     const p = client.user?.setActivity(activity);
