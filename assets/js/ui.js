@@ -180,8 +180,14 @@ const UI = (() => {
     frame.setAttribute("mozallowfullscreen", "");
     frame.setAttribute(
       "allow",
-      "autoplay; fullscreen *; encrypted-media; picture-in-picture"
+      "autoplay; fullscreen; encrypted-media; picture-in-picture"
     );
+    // Some embed CDNs reject a strict origin referrer.
+    if (/vidsrc|2embed|autoembed|embed-api/i.test(url)) {
+      frame.referrerPolicy = "no-referrer-when-downgrade";
+    } else {
+      frame.referrerPolicy = "origin";
+    }
     const touch =
       window.matchMedia("(hover: none)").matches ||
       window.matchMedia("(pointer: coarse)").matches;

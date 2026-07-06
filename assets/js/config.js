@@ -59,8 +59,15 @@ const CONFIG = {
       id: "vidsrc",
       name: "VidSrc (subtitles)",
       movie:
-        "https://vidsrc-embed.ru/embed/movie?tmdb={id}&ds_lang={lang}&autoplay=1",
-      tv: "https://vidsrc-embed.ru/embed/tv?tmdb={id}&season={season}&episode={episode}&ds_lang={lang}&autoplay=1",
+        "https://vidsrc-embed.su/embed/movie/{id}?ds_lang={lang}&autoplay=1",
+      tv: "https://vidsrc-embed.su/embed/tv/{id}/{season}/{episode}?ds_lang={lang}&autoplay=1",
+    },
+    {
+      id: "vidsrc-ru",
+      name: "VidSrc · mirror",
+      movie:
+        "https://vidsrc-embed.ru/embed/movie/{id}?ds_lang={lang}&autoplay=1",
+      tv: "https://vidsrc-embed.ru/embed/tv/{id}/{season}/{episode}?ds_lang={lang}&autoplay=1",
     },
     {
       id: "vidsrccc",
